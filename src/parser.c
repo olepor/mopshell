@@ -70,3 +70,11 @@ char*** parse_input(char* input) {
 
   return commands;
 }
+
+/**
+ * Free up the memory in the commands arrays
+ */
+void free_command_mem(char*** cmd) {
+  free(*cmd);
+  free(cmd);
+}

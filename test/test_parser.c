@@ -49,7 +49,7 @@ static char* test_parse_input() {
   mu_assert("error, parse_input: 0:1", strcmp(commands[0][1], "hello") == 0);
   char** str = commands[0];
   mu_assert("error, parse_input: 1", commands[0][2] == NULL);
-  /* free */
+  free_command_mem(commands);
   /* Case 2 - several dimensions */
   char* tst_str2 = create_dyn_string("echo hello | rev\n");
   commands = parse_input(tst_str2);
@@ -58,7 +58,7 @@ static char* test_parse_input() {
   mu_assert("error, parse_input2: not null", commands[0][2] == NULL);
   mu_assert("error, parse_input2: 1:0", strcmp(commands[1][0], "rev") == 0);
   mu_assert("error, parse_input2: not null", commands[1][1] == NULL);
-
+  free_command_mem(commands);
   char* tst_str4 = create_dyn_string("echo hello | rev | rev\n");
   commands = parse_input(tst_str4);
   mu_assert("error, parse_input2: 0:0", strcmp(commands[0][0], "echo") == 0);
@@ -68,6 +68,7 @@ static char* test_parse_input() {
   mu_assert("error, parse_input2: not null", commands[1][1] == NULL);
   mu_assert("error, parse_input2: 1:0", strcmp(commands[2][0], "rev") == 0);
   mu_assert("error, parse_input2: not null", commands[2][1] == NULL);
+  free_command_mem(commands);
   return 0;
 }
 
