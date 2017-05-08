@@ -12,6 +12,12 @@ parser: $(SRC)parser.c
 
 .PHONY: test
 
+debug: compile_debug
+	lldb debug
+
+compile_debug: $(SRC)parser.c
+	clang -g -o debug src/parser.c test/test_parser.c
+
 test: compile_tests parser
 	./testrunner
 

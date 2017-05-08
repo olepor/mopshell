@@ -33,21 +33,25 @@ int count_delimeters(char* str, char* delim) {
  * @return string_arr - a calloc'd string array of size nr_delims+1
  */
 char** split_string(char* string, char* string_delim) {
+  printf("in split string\n");
   int tokens = count_delimeters(string, string_delim);
   char** string_arr = (char**) calloc(tokens+1, sizeof(char*)); // +1 for NULL
   check_mem(string_arr, "Failed to allocate memory for string_arr");
+  printf("input string: %s\n", string);
   char* _str = strtok(string, string_delim);
-  int i=0;
-  for(; _str != NULL; _str = strtok(NULL, string_delim)) {
-    /* printf("_str is: %s\n", _str); */
-    if (*_str == '\n') {
-      printf("end of line");
-      break;
-    }
-    string_arr[i++] = _str;
-  }
-  string_arr[i]=NULL;
-  return string_arr;
+  /* char* _str = strtok(string, string_delim); */
+  /* int i=0; */
+  /* for(; _str != NULL; _str = strtok(NULL, string_delim)) { */
+  /*   /\* printf("_str is: %s\n", _str); *\/ */
+  /*   if (*_str == '\n') { */
+  /*     printf("end of line"); */
+  /*     break; */
+  /*   } */
+  /*   string_arr[i++] = _str; */
+  /* } */
+  /* string_arr[i]=NULL; */
+  /* return string_arr; */
+  return NULL;
 }
 
 /**
