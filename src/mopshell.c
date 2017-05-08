@@ -60,15 +60,6 @@ void redirect(int oldfd, int newfd) {
   }
 }
 
-void run(char* const argv[], int in, int out) {
-  redirect(in, STDIN_FILENO);   /* <&in  : child reads from in */
-  redirect(out, STDOUT_FILENO); /* >&out : child writes to out */
-
-  execvp(argv[0], argv);
-  perror(argv[0]);
-  exit(EXIT_FAILURE);
-}
-
 enum PIPE_TYPE {
   READ, WRITE
 };
@@ -78,6 +69,7 @@ int chain_commands(char*** commands) {
   int nr_commands = arraylen((char**)commands);
   int i = 0, in = STDIN_FILENO; /* the first command reads from stdin */
   for ( ; i < (nr_commands-1); ++i) {
+    printf("run in background: %d\n", run_in_background(command[i]));
     int fd[2]; /* in/out pipe ends */
     pid_t pid; /* child's pid */
     if (pipe(fd) == -1) {
@@ -112,14 +104,30 @@ int chain_commands(char*** commands) {
 }
 
 int run_in_background(char** command) {
-  if ((*command[arraylen(command)-1]) == '&')
+  int end = arraylen(command)-1;
+  if ((*command[end]) == '&') {
+    printf("Command end: %s\n", command[end]);
+    *command[end] = NULL; // Remove the ampersand
     return 1;
+  }
   return 0;
 }
 
-int execute_commands(char*** commands) {
+/**
+ * Runs the parsed input commands
+ * @param char*** commands - The parsed input
+ * @ return TODO
+ */
+void execute_commands(char*** commands) {
   const char*** command = commands;
   int nr_commands = arraylen((char**)commands);
+  printf("ampersand: %d\n", run_in_background(commands[nr_commands-1]));
+  if (commands[nr_commands-1][1] == NULL) {
+    printf("Yay\n");
+  } else {
+    printf("%s\n", commands[nr_commands-1][1]);
+    printf("Nooo\n");
+  }
   int n = sizeof(command) / sizeof(*command);
   int tmpin = dup(0);
   int tmpout = dup(1);
@@ -133,15 +141,12 @@ int execute_commands(char*** commands) {
   pipe(fd);
   if ((pid = fork()) == 0){
     close(fd[READ]);
-    /* redirect(in, STDIN_FILENO);   /\* <&in  : child reads from in *\/ */
-    /* redirect(fd[WRITE], STDOUT_FILENO); /\* >&out : child writes to out *\/ */
-    /* execvp(command[nr_commands-1][0], command[nr_commands-1]); */
-    /* perror(command[nr_commands-1][0]); */
-    /* exit(EXIT_FAILURE); */
-    run((char* const*)commands[nr_commands-1], in, STDOUT_FILENO); /* $ command < in */
+    redirect(in, STDIN_FILENO);
+    execvp(command[nr_commands-1][0], command[nr_commands-1]);
+    perror(command[nr_commands-1][0]);
+    exit(EXIT_FAILURE);
   }
   int status;
-  printf("ampersand: %d\n", run_in_background(commands[nr_commands-1]));
   if (run_in_background(commands[nr_commands-1])) {
     while ((pid = wait(&status)) != -1) {
       fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
@@ -150,7 +155,6 @@ int execute_commands(char*** commands) {
   // Reestablish stdin & stdout
   dup2(tmpin, 0);
   dup2(tmpout,1);
-  return 0;
 }
 
 
@@ -158,7 +162,6 @@ void run_terminal () {
 
   char*** commands;
 
-  /* run all commands but the last */
   do {
     printf(">> ");
     char* input = get_user_input();
