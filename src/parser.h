@@ -1,2 +1,2 @@
 
-int returnplusone(int a);
+int count_delimeters(char* str, char* delim);

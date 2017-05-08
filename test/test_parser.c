@@ -1,7 +1,7 @@
 /* file minunit_example.c */
 
 #include <stdio.h>
-#include <parser.h>
+#include "../src/parser.h"
 #include "minunit.h"
 
 int tests_run = 0;
@@ -9,19 +9,18 @@ int tests_run = 0;
 int foo = 7;
 int bar = 4;
 
-static char * test_foo() {
-  mu_assert("error, foo != 7", foo == 7);
-  return 0;
-}
-
-static char * test_bar() {
-  mu_assert("error, bar != 5", bar == 5);
+static char * test_count_delimeters() {
+  const char* tst_str1 = "echo hello\n";
+  const char* tst_str2 = "echo hello | rev";
+  const char* tst_str3 = "echo hello rev rev";
+  mu_assert("error, count_delimeters!", count_delimeters((char*)tst_str1, " ") == 1);
+  mu_assert("error, count_delimeters!", count_delimeters((char*)tst_str2, "|") == 1);
+  mu_assert("error, count_delimeters!", count_delimeters((char*)tst_str3, " ") == 3);
   return 0;
 }
 
 static char * all_tests() {
-  mu_run_test(test_foo);
-  mu_run_test(test_bar);
+  mu_run_test(test_count_delimeters);
   return 0;
 }
 
