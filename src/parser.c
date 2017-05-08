@@ -25,6 +25,20 @@ int count_delimeters(char* str, char* delim) {
 }
 
 /**
+ * tokenise_string is a non-destructive version of str_tok,
+ * in that it allocates memory for every token, and after it has finished
+ * copying each token into it's own memory, free's the input string.
+ * @param char* str - the input to be tokenised
+ * @return A pointer to an array of tokens, each with their own memory
+ */
+char** tokenise_string(char* str, char* delim) {
+  /* int size =0; */
+  /* char* start, end; */
+  /* for (char c) */
+  return 0;
+}
+
+/**
  * Splits a string into an array of strings and terminates it with a NULL pointer.
  * Beware, the original string will be destroyed cause of strtok
  * @param string - the input string to be split. Caution! this is naively
@@ -33,24 +47,21 @@ int count_delimeters(char* str, char* delim) {
  * @return string_arr - a calloc'd string array of size nr_delims+1
  */
 char** split_string(char* string, char* string_delim) {
-  printf("in split string\n");
   int tokens = count_delimeters(string, string_delim);
   char** string_arr = (char**) calloc(tokens+1, sizeof(char*)); // +1 for NULL
   check_mem(string_arr, "Failed to allocate memory for string_arr");
-  printf("input string: %s\n", string);
   char* _str = strtok(string, string_delim);
-  /* char* _str = strtok(string, string_delim); */
-  /* int i=0; */
-  /* for(; _str != NULL; _str = strtok(NULL, string_delim)) { */
-  /*   /\* printf("_str is: %s\n", _str); *\/ */
-  /*   if (*_str == '\n') { */
-  /*     printf("end of line"); */
-  /*     break; */
-  /*   } */
-  /*   string_arr[i++] = _str; */
-  /* } */
-  /* string_arr[i]=NULL; */
-  /* return string_arr; */
+  int i=0;
+  for(; _str != NULL; _str = strtok(NULL, string_delim)) {
+    /* printf("_str is: %s\n", _str); */
+    if (*_str == '\n') {
+      printf("end of line");
+      break;
+    }
+    string_arr[i++] = _str;
+  }
+  string_arr[i]=NULL;
+  return string_arr;
   return NULL;
 }
 

@@ -10,7 +10,7 @@ CFLAGS= -I $(SRC) -O$(OPTIMISATION_LEVEL)
 parser: $(SRC)parser.c
 	$(C_COMPILER) $(CFLAGS) -c -o $(OBJ)parser $<
 
-.PHONY: test
+.PHONY: test clean debug
 
 debug: compile_debug
 	lldb debug
@@ -23,3 +23,6 @@ test: compile_tests parser
 
 compile_tests: $(SRC_TESTS)
 	$(C_COMPILER) $(wildcard $(OBJ)*) $(CFLAGS) -o testrunner $(wildcard $(TESTS)*.c)
+
+clean:
+	rm testrunner

@@ -1,6 +1,6 @@
-/* file minunit_example.c */
-
 #include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 #include "../src/parser.h"
 #include "minunit.h"
 
@@ -24,14 +24,22 @@ static char * test_count_delimeters() {
   return 0;
 }
 
+char* create_dyn_string(const char* str_lit) {
+  char* dstr = calloc(strlen(str_lit)+1, sizeof(char));
+  memcpy(dstr, str_lit, strlen(str_lit));
+  return dstr;
+}
+
 static char * test_split_string() {
-  char* tst_str1 = "echo hello\n";
+  char* tst_str1 = create_dyn_string("echo hello\n");
+  printf("%s\n", tst_str1);
   char** ret_str = split_string(tst_str1, " ");
-  /* mu_assert("error, split_string!", arraylen(ret_str) == 2); */
-  /* const char* tst_str2 = "echo hello | rev"; */
-  /* mu_assert("error, split_string!", arraylen(split_string((char*)tst_str2, "|")) == 2); */
-  /* const char* tst_str3 = "onelonestring"; */
-  /* mu_assert("error, split_string!", arraylen(split_string((char*)tst_str3, "|")) == 0); */
+  mu_assert("error, split_string!", arraylen(ret_str) == 2);
+  char* tst_str2 = create_dyn_string("echo hello | rev");
+  mu_assert("error, split_string!", arraylen(split_string((char*)tst_str2, "|")) == 2);
+  char* tst_str3 = create_dyn_string("onelonestring");
+  mu_assert("error, split_string!", arraylen(split_string((char*)tst_str3, "|")) == 1);
+  free(tst_str1); free(tst_str2); free(tst_str3);
   return 0;
 }
 
