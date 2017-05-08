@@ -111,32 +111,23 @@ int chain_commands(char*** commands) {
   return 0;
 }
 
+enum PIPE_TYPE {
+  READ, WRITE
+};
+
 int execute_commands(char*** commands) {
 
-  const char* echo[] = { "echo", "test", NULL };
-  const char* rev[] = { "rev", NULL };
-  const char* rev2[] = { "rev", NULL };
-
-  printf("arraylen in ex: %d\n", arraylen(commands));
-  /* const char** command[] = { echo, rev, echo }; */
-  /* char*** command; */
   const char*** command = commands;
   int nr_commands = arraylen(commands);
   int n = sizeof(command) / sizeof(*command);
-  printf("commands[n-1]: %s\n", command[n-1][0]);
-  printf("nr o commands %d\n", nr_commands);
-
   int tmpin = dup(0);
   int tmpout = dup(1);
   // Run all the children
-
   int i = 0, in = STDIN_FILENO; /* the first command reads from stdin */
   for ( ; i < (nr_commands-1); ++i) {
     int fd[2]; /* in/out pipe ends */
     pid_t pid; /* child's pid */
-
     if (pipe(fd) == -1) {
-      /* report_error_and_exit("pipe"); */
       perror("noo");
       exit(1);
     }
@@ -151,28 +142,24 @@ int execute_commands(char*** commands) {
     }
     else { /* parent */
       assert (pid > 0);
-      Close(fd[1]); /* close unused write end of the pipe */
+      Close(fd[WRITE]); /* close unused write end of the pipe */
       Close(in);    /* close unused read end of the previous pipe */
-      in = fd[0]; /* the next command reads from here */
+      in = fd[READ]; /* the next command reads from here */
     }
   }
-
   // Run the last process (end of the pipe)
-
   pid_t pid;
   int fd[2];
   pipe(fd);
 
   if ((pid = fork()) == 0){
-    close(fd[0]);
+    close(fd[READ]);
     run((char* const*)commands[i], in, STDOUT_FILENO); /* $ command < in */
   }
   int status;
   while ((pid = wait(&status)) != -1) {
-    printf("Wainting...\n");
     fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
   }
-
   // Reestablish stdin & stdout
   dup2(tmpin, 0);
   dup2(tmpout,1);
