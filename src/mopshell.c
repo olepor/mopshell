@@ -111,8 +111,13 @@ int chain_commands(char*** commands) {
   return in;
 }
 
-int execute_commands(char*** commands) {
+int run_in_background(char** command) {
+  if ((*command[arraylen(command)-1]) == '&')
+    return 1;
+  return 0;
+}
 
+int execute_commands(char*** commands) {
   const char*** command = commands;
   int nr_commands = arraylen((char**)commands);
   int n = sizeof(command) / sizeof(*command);
@@ -126,14 +131,21 @@ int execute_commands(char*** commands) {
   pid_t pid;
   int fd[2];
   pipe(fd);
-
   if ((pid = fork()) == 0){
     close(fd[READ]);
+    /* redirect(in, STDIN_FILENO);   /\* <&in  : child reads from in *\/ */
+    /* redirect(fd[WRITE], STDOUT_FILENO); /\* >&out : child writes to out *\/ */
+    /* execvp(command[nr_commands-1][0], command[nr_commands-1]); */
+    /* perror(command[nr_commands-1][0]); */
+    /* exit(EXIT_FAILURE); */
     run((char* const*)commands[nr_commands-1], in, STDOUT_FILENO); /* $ command < in */
   }
   int status;
-  while ((pid = wait(&status)) != -1) {
-    fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
+  printf("ampersand: %d\n", run_in_background(commands[nr_commands-1]));
+  if (run_in_background(commands[nr_commands-1])) {
+    while ((pid = wait(&status)) != -1) {
+      fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
+    }
   }
   // Reestablish stdin & stdout
   dup2(tmpin, 0);
