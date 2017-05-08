@@ -46,7 +46,7 @@ static char* test_parse_input() {
   char* tst_str = create_dyn_string("echo hello\n");
   char*** commands = parse_input(tst_str);
   mu_assert("error, parse_input: 0:0", strcmp(commands[0][0], "echo") == 0);
-  mu_assert("error, parse_input: 0:1", strcmp(commands[0][1], "hello\n") == 0);
+  mu_assert("error, parse_input: 0:1", strcmp(commands[0][1], "hello") == 0);
   char** str = commands[0];
   mu_assert("error, parse_input: 1", commands[0][2] == NULL);
   /* free */
@@ -56,7 +56,7 @@ static char* test_parse_input() {
   mu_assert("error, parse_input2: 0:0", strcmp(commands[0][0], "echo") == 0);
   mu_assert("error, parse_input2: 0:1", strcmp(commands[0][1], "hello") == 0);
   mu_assert("error, parse_input2: not null", commands[0][2] == NULL);
-  mu_assert("error, parse_input2: 1:0", strcmp(commands[1][0], "rev\n") == 0);
+  mu_assert("error, parse_input2: 1:0", strcmp(commands[1][0], "rev") == 0);
   mu_assert("error, parse_input2: not null", commands[1][1] == NULL);
 
   return 0;

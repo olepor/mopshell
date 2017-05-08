@@ -39,10 +39,8 @@ char** split_string(char* string, char* string_delim) {
   char* _str = strtok(string, string_delim);
   int i=0;
   for(; _str != NULL; _str = strtok(NULL, string_delim)) {
-    /* printf("_str is: %s\n", _str); */
-    if (*_str == '\n') {
-      printf("end of line");
-      break;
+    if (*(_str+strlen(_str)-1) == '\n') {
+      *(_str+strlen(_str)-1) = 0;
     }
     string_arr[i++] = _str;
   }
