@@ -69,6 +69,28 @@ enum PIPE_TYPE {
   READ, WRITE
 };
 
+int create_pipe(char*** commands, int cmd_nr, int in) {
+  switch((pid=fork())) {
+
+  case 0:
+    Close(fd[0]); /* close unused read end of the pipe */
+    run((char* const*)command[i], in, fd[1]); /* $ command < in > fd[1] */
+    break;
+
+  case -1:
+    perror("no fork!");
+    exit(1);
+    break;
+
+  default:
+    Close(fd[WRITE]); /* close unused write end of the pipe */
+    Close(in);    /* close unused read end of the previous pipe */
+    in = fd[READ]; /* the next command reads from here */
+    break;
+  }
+  return in;
+}
+
 int chain_commands(char*** commands) {
   char*** command = commands;
   int nr_commands = arraylen(commands);
@@ -80,21 +102,25 @@ int chain_commands(char*** commands) {
       perror("noo");
       exit(1);
     }
-    else if ((pid = fork()) == -1) {
-      /* report_error_and_exit("fork"); */
-      perror("no fork!");
-      exit(1);
-    }
-    else if (pid == 0) { /* run command[i] in the child process */
-      Close(fd[0]); /* close unused read end of the pipe */
-      run((char* const*)command[i], in, fd[1]); /* $ command < in > fd[1] */
-    }
-    else { /* parent */
-      assert (pid > 0);
-      Close(fd[WRITE]); /* close unused write end of the pipe */
-      Close(in);    /* close unused read end of the previous pipe */
-      in = fd[READ]; /* the next command reads from here */
-    }
+    in = create_pipe(commands, i, in);
+    /* switch((pid=fork())) { */
+
+    /* case 0: */
+    /*   Close(fd[0]); /\* close unused read end of the pipe *\/ */
+    /*   run((char* const*)command[i], in, fd[1]); /\* $ command < in > fd[1] *\/ */
+    /*   break; */
+
+    /* case -1: */
+    /*   perror("no fork!"); */
+    /*   exit(1); */
+    /*   break; */
+
+    /* default: */
+    /*   Close(fd[WRITE]); /\* close unused write end of the pipe *\/ */
+    /*   Close(in);    /\* close unused read end of the previous pipe *\/ */
+    /*   in = fd[READ]; /\* the next command reads from here *\/ */
+    /*   break; */
+    /* } */
   }
   return in;
 }
@@ -110,30 +136,6 @@ int execute_commands(char*** commands) {
   int in=0;
   if (nr_commands > 0)
     in = chain_commands(commands);
-  /* int i = 0, in = STDIN_FILENO; /\* the first command reads from stdin *\/ */
-  /* for ( ; i < (nr_commands-1); ++i) { */
-  /*   int fd[2]; /\* in/out pipe ends *\/ */
-  /*   pid_t pid; /\* child's pid *\/ */
-  /*   if (pipe(fd) == -1) { */
-  /*     perror("noo"); */
-  /*     exit(1); */
-  /*   } */
-  /*   else if ((pid = fork()) == -1) { */
-  /*     /\* report_error_and_exit("fork"); *\/ */
-  /*     perror("no fork!"); */
-  /*     exit(1); */
-  /*   } */
-  /*   else if (pid == 0) { /\* run command[i] in the child process *\/ */
-  /*     Close(fd[0]); /\* close unused read end of the pipe *\/ */
-  /*     run((char* const*)command[i], in, fd[1]); /\* $ command < in > fd[1] *\/ */
-  /*   } */
-  /*   else { /\* parent *\/ */
-  /*     assert (pid > 0); */
-  /*     Close(fd[WRITE]); /\* close unused write end of the pipe *\/ */
-  /*     Close(in);    /\* close unused read end of the previous pipe *\/ */
-  /*     in = fd[READ]; /\* the next command reads from here *\/ */
-  /*   } */
-  /* } */
   // Run the last process (end of the pipe)
   pid_t pid;
   int fd[2];
