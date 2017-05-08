@@ -26,3 +26,4 @@ compile_tests: $(SRC_TESTS)
 
 clean:
 	rm testrunner
+	rm debug

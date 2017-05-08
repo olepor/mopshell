@@ -32,7 +32,6 @@ char* create_dyn_string(const char* str_lit) {
 
 static char * test_split_string() {
   char* tst_str1 = create_dyn_string("echo hello\n");
-  printf("%s\n", tst_str1);
   char** ret_str = split_string(tst_str1, " ");
   mu_assert("error, split_string!", arraylen(ret_str) == 2);
   char* tst_str2 = create_dyn_string("echo hello | rev");
@@ -44,14 +43,29 @@ static char * test_split_string() {
 }
 
 static char* test_parse_input() {
-  char* tst_str = "echo hello\n";
+  char* tst_str = create_dyn_string("echo hello\n");
   char*** commands = parse_input(tst_str);
+  mu_assert("error, parse_input: 0:0", strcmp(commands[0][0], "echo") == 0);
+  mu_assert("error, parse_input: 0:1", strcmp(commands[0][1], "hello\n") == 0);
+  char** str = commands[0];
+  mu_assert("error, parse_input: 1", commands[0][2] == NULL);
+  /* free */
+  /* Case 2 - several dimensions */
+  char* tst_str2 = create_dyn_string("echo hello | rev\n");
+  commands = parse_input(tst_str2);
+  mu_assert("error, parse_input2: 0:0", strcmp(commands[0][0], "echo") == 0);
+  mu_assert("error, parse_input2: 0:1", strcmp(commands[0][1], "hello") == 0);
+  mu_assert("error, parse_input2: not null", commands[0][2] == NULL);
+  mu_assert("error, parse_input2: 1:0", strcmp(commands[1][0], "rev\n") == 0);
+  mu_assert("error, parse_input2: not null", commands[1][1] == NULL);
+
   return 0;
 }
 
 static char * all_tests() {
   mu_run_test(test_count_delimeters);
   mu_run_test(test_split_string);
+  mu_run_test(test_parse_input);
   return 0;
 }
 

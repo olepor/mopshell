@@ -25,20 +25,6 @@ int count_delimeters(char* str, char* delim) {
 }
 
 /**
- * tokenise_string is a non-destructive version of str_tok,
- * in that it allocates memory for every token, and after it has finished
- * copying each token into it's own memory, free's the input string.
- * @param char* str - the input to be tokenised
- * @return A pointer to an array of tokens, each with their own memory
- */
-char** tokenise_string(char* str, char* delim) {
-  /* int size =0; */
-  /* char* start, end; */
-  /* for (char c) */
-  return 0;
-}
-
-/**
  * Splits a string into an array of strings and terminates it with a NULL pointer.
  * Beware, the original string will be destroyed cause of strtok
  * @param string - the input string to be split. Caution! this is naively
@@ -74,17 +60,14 @@ char** split_string(char* string, char* string_delim) {
 char*** parse_input(char* input) {
   char*** commands;
   // First split by the pipe seperators
-  int pipes = count_delimeters(input, "|");
+  int nr_commands = count_delimeters(input, "|")+1;
   // allocate memory for the commands-pointer array
-  commands = calloc(pipes+1, sizeof(char*)); // +1 for NULL
+  commands = calloc(nr_commands+1, sizeof(char*)); // +1 for NULL
   char** command_arr = split_string(input, "|");
-  for (int i=0; i<=pipes; i++) {
+  for (int i=0; i<nr_commands; i++) {
     int tokens=count_delimeters(command_arr[i], " ");
     char** token_arr = split_string(command_arr[i], " ");
-    *commands = calloc(tokens+1, sizeof(char*)); // hold the token pointers
-    for (int j=0; j<=tokens; j++) {
-      commands[i][j] = token_arr[j];
-    }
+    commands[i] = token_arr;
   }
 
   return commands;
