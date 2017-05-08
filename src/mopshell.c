@@ -69,7 +69,6 @@ int chain_commands(char*** commands) {
   int nr_commands = arraylen((char**)commands);
   int i = 0, in = STDIN_FILENO; /* the first command reads from stdin */
   for ( ; i < (nr_commands-1); ++i) {
-    printf("run in background: %d\n", run_in_background(command[i]));
     int fd[2]; /* in/out pipe ends */
     pid_t pid; /* child's pid */
     if (pipe(fd) == -1) {
@@ -106,7 +105,6 @@ int chain_commands(char*** commands) {
 int run_in_background(char** command) {
   int end = arraylen(command)-1;
   if ((*command[end]) == '&') {
-    printf("Command end: %s\n", command[end]);
     *command[end] = NULL; // Remove the ampersand
     return 1;
   }
@@ -121,13 +119,6 @@ int run_in_background(char** command) {
 void execute_commands(char*** commands) {
   const char*** command = commands;
   int nr_commands = arraylen((char**)commands);
-  printf("ampersand: %d\n", run_in_background(commands[nr_commands-1]));
-  if (commands[nr_commands-1][1] == NULL) {
-    printf("Yay\n");
-  } else {
-    printf("%s\n", commands[nr_commands-1][1]);
-    printf("Nooo\n");
-  }
   int n = sizeof(command) / sizeof(*command);
   int tmpin = dup(0);
   int tmpout = dup(1);
