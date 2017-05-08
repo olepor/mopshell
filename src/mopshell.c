@@ -13,15 +13,6 @@
 #define check_mem(memptr, errormessage)         \
   if (memptr == NULL) perror(errormessage)
 
-#define Close(FD) do {                              \
-    int Close_fd = (FD);                            \
-    if (close(Close_fd) == -1) {                    \
-      perror("close");                              \
-      fprintf(stderr, "%s:%d: close(" #FD ") %d\n", \
-              __FILE__, __LINE__, Close_fd);        \
-    }                                               \
-  }while(0)
-
 /**
  * Return the length of a null-terminated array
  */
@@ -52,7 +43,7 @@ char* get_user_input() {
 void redirect(int oldfd, int newfd) {
   if (oldfd != newfd) {
     if (dup2(oldfd, newfd) != -1)
-      Close(oldfd); /* successfully redirected */
+      close(oldfd); /* successfully redirected */
     else {
       perror("redirect failed!");
       exit(EXIT_FAILURE);
@@ -78,7 +69,7 @@ int chain_commands(char*** commands) {
     switch((pid=fork())) {
 
     case 0:
-      Close(fd[0]); /* close unused read end of the pipe */
+      close(fd[0]); /* close unused read end of the pipe */
       redirect(in, STDIN_FILENO);   /* <&in  : child reads from in */
       redirect(fd[WRITE], STDOUT_FILENO); /* >&out : child writes to out */
       execvp(command[i][0], command[i]);
@@ -92,8 +83,8 @@ int chain_commands(char*** commands) {
       break;
 
     default:
-      Close(fd[WRITE]); /* close unused write end of the pipe */
-      Close(in);    /* close unused read end of the previous pipe */
+      close(fd[WRITE]); /* close unused write end of the pipe */
+      close(in);    /* close unused read end of the previous pipe */
       in = fd[READ]; /* the next command reads from here */
       break;
 
