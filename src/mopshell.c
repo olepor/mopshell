@@ -117,43 +117,45 @@ int execute_commands(char*** commands) {
   const char* rev[] = { "rev", NULL };
   const char* rev2[] = { "rev", NULL };
 
-  const char** command[] = { echo, rev, rev };
+  printf("arraylen in ex: %d\n", arraylen(commands));
+  /* const char** command[] = { echo, rev, echo }; */
   /* char*** command; */
-  int nr_commands = arraylen((char**)commands);
-  printf("nr_commands: %d\n", nr_commands);
+  const char*** command = commands;
+  int nr_commands = arraylen(commands);
   int n = sizeof(command) / sizeof(*command);
+  printf("commands[n-1]: %s\n", command[n-1][0]);
+  printf("nr o commands %d\n", nr_commands);
 
   int tmpin = dup(0);
   int tmpout = dup(1);
   // Run all the children
 
   int i = 0, in = STDIN_FILENO; /* the first command reads from stdin */
-  chain_commands(commands);
-  /* for ( ; i < (n-1); ++i) { */
-  /*   int fd[2]; /\* in/out pipe ends *\/ */
-  /*   pid_t pid; /\* child's pid *\/ */
+  for ( ; i < (nr_commands-1); ++i) {
+    int fd[2]; /* in/out pipe ends */
+    pid_t pid; /* child's pid */
 
-  /*   if (pipe(fd) == -1) { */
-  /*     /\* report_error_and_exit("pipe"); *\/ */
-  /*     perror("noo"); */
-  /*     exit(1); */
-  /*   } */
-  /*   else if ((pid = fork()) == -1) { */
-  /*     /\* report_error_and_exit("fork"); *\/ */
-  /*     perror("no fork!"); */
-  /*     exit(1); */
-  /*   } */
-  /*   else if (pid == 0) { /\* run command[i] in the child process *\/ */
-  /*     Close(fd[0]); /\* close unused read end of the pipe *\/ */
-  /*     run((char* const*)command[i], in, fd[1]); /\* $ command < in > fd[1] *\/ */
-  /*   } */
-  /*   else { /\* parent *\/ */
-  /*     assert (pid > 0); */
-  /*     Close(fd[1]); /\* close unused write end of the pipe *\/ */
-  /*     Close(in);    /\* close unused read end of the previous pipe *\/ */
-  /*     in = fd[0]; /\* the next command reads from here *\/ */
-  /*   } */
-  /* } */
+    if (pipe(fd) == -1) {
+      /* report_error_and_exit("pipe"); */
+      perror("noo");
+      exit(1);
+    }
+    else if ((pid = fork()) == -1) {
+      /* report_error_and_exit("fork"); */
+      perror("no fork!");
+      exit(1);
+    }
+    else if (pid == 0) { /* run command[i] in the child process */
+      Close(fd[0]); /* close unused read end of the pipe */
+      run((char* const*)command[i], in, fd[1]); /* $ command < in > fd[1] */
+    }
+    else { /* parent */
+      assert (pid > 0);
+      Close(fd[1]); /* close unused write end of the pipe */
+      Close(in);    /* close unused read end of the previous pipe */
+      in = fd[0]; /* the next command reads from here */
+    }
+  }
 
   // Run the last process (end of the pipe)
 
@@ -163,7 +165,7 @@ int execute_commands(char*** commands) {
 
   if ((pid = fork()) == 0){
     close(fd[0]);
-    run((char* const*)command[i], in, STDOUT_FILENO); /* $ command < in */
+    run((char* const*)commands[i], in, STDOUT_FILENO); /* $ command < in */
   }
   int status;
   while ((pid = wait(&status)) != -1) {
@@ -190,8 +192,9 @@ void run_terminal () {
       continue;
     } else {
       commands = parse_input(input);
+      printf("arraylen: %d\n", arraylen(commands));
     }
-    if (strncmp(commands[0][0], "exit\n", 5) == 0) {
+    if (strncmp(commands[0][0], "exit", 5) == 0) {
       exit(EXIT_SUCCESS);
     }
     execute_commands(commands);
