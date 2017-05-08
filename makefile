@@ -16,4 +16,4 @@ test: compile_tests parser
 	./testrunner
 
 compile_tests: $(SRC_TESTS)
-	$(C_COMPILER) src/obj/parser $(CFLAGS) -o testrunner $(wildcard $(TESTS)*.c)
+	$(C_COMPILER) $(wildcard $(OBJ)*) $(CFLAGS) -o testrunner $(wildcard $(TESTS)*.c)

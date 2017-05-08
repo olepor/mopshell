@@ -6,16 +6,20 @@
 
 int tests_run = 0;
 
-int foo = 7;
-int bar = 4;
-
 static char * test_count_delimeters() {
   const char* tst_str1 = "echo hello\n";
   const char* tst_str2 = "echo hello | rev";
   const char* tst_str3 = "echo hello rev rev";
+  const char* tst_str4 = "echohellorevrev";
   mu_assert("error, count_delimeters!", count_delimeters((char*)tst_str1, " ") == 1);
   mu_assert("error, count_delimeters!", count_delimeters((char*)tst_str2, "|") == 1);
   mu_assert("error, count_delimeters!", count_delimeters((char*)tst_str3, " ") == 3);
+  mu_assert("error, count_delimeters!", count_delimeters((char*)tst_str4, " ") == 0);
+  return 0;
+}
+
+static char * test_split_string(char* string, char* string_delim) {
+  const char* tst_str1 = "echo hello\n";
   return 0;
 }
 
