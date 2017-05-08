@@ -6,6 +6,12 @@
 
 int tests_run = 0;
 
+static int arraylen(char** str_arr) {
+  int i=0;
+  for (;str_arr[i]!=NULL; i++);
+  return i;
+}
+
 static char * test_count_delimeters() {
   const char* tst_str1 = "echo hello\n";
   const char* tst_str2 = "echo hello | rev";
@@ -20,6 +26,12 @@ static char * test_count_delimeters() {
 
 static char * test_split_string(char* string, char* string_delim) {
   const char* tst_str1 = "echo hello\n";
+  char** ret_str = split_string((char*)tst_str1, " ");
+  mu_assert("error, split_string!", arraylen(ret_str) == 2);
+  const char* tst_str2 = "echo hello | rev";
+  mu_assert("error, split_string!", arraylen(split_string((char*)tst_str2, "|")) == 2);
+  const char* tst_str3 = "onelonestring";
+  mu_assert("error, split_string!", arraylen(split_string((char*)tst_str3, "|")) == 0);
   return 0;
 }
 

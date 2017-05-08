@@ -26,14 +26,15 @@ int count_delimeters(char* str, char* delim) {
 
 /**
  * Splits a string into an array of strings and terminates it with a NULL pointer.
- * Beware, the original string will be destroyed!
+ * Beware, the original string will be destroyed cause of strtok
  * @param string - the input string to be split. Caution! this is naively
  * expected to be a valid null-terminated string.
  * @param path_delim - string_delim(eter)
- * @return string_arr - a malloc'd string array of size strlen(string)
+ * @return string_arr - a calloc'd string array of size nr_delims+1
  */
 char** split_string(char* string, char* string_delim) {
-  char** string_arr = (char**) calloc(strlen(string), sizeof(char));
+  int tokens = count_delimeters(string, string_delim);
+  char** string_arr = (char**) calloc(tokens+1, sizeof(char*)); // +1 for NULL
   check_mem(string_arr, "Failed to allocate memory for string_arr");
   char* _str = strtok(string, string_delim);
   int i=0;
