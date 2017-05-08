@@ -62,6 +62,15 @@ char*** parse_input(char* input) {
   int pipes = count_delimeters(input, "|");
   // allocate memory for the commands-pointer array
   commands = calloc(pipes+1, sizeof(char*)); // +1 for NULL
+  char** command_arr = split_string(input, "|");
+  for (int i=0; i<=pipes; i++) {
+    int tokens=count_delimeters(command_arr[i], " ");
+    char** token_arr = split_string(command_arr[i], " ");
+    *commands = calloc(tokens+1, sizeof(char*)); // hold the token pointers
+    for (int j=0; j<=tokens; j++) {
+      commands[i][j] = token_arr[j];
+    }
+  }
 
-  return NULL;
+  return commands;
 }
