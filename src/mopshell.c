@@ -44,8 +44,12 @@ char* get_user_input() {
   return usr_input;
 }
 
-/* move oldfd to newfd */
-static void redirect(int oldfd, int newfd) {
+/**
+ * chains the filedescriptors in a pipe accordingly
+ * @param int oldfd - The old filedescriptor
+ * @param int newfd - The new filedescriptor
+ */
+void redirect(int oldfd, int newfd) {
   if (oldfd != newfd) {
     if (dup2(oldfd, newfd) != -1)
       Close(oldfd); /* successfully redirected */
@@ -69,31 +73,9 @@ enum PIPE_TYPE {
   READ, WRITE
 };
 
-int create_pipe(char*** commands, int cmd_nr, int in) {
-  switch((pid=fork())) {
-
-  case 0:
-    Close(fd[0]); /* close unused read end of the pipe */
-    run((char* const*)command[i], in, fd[1]); /* $ command < in > fd[1] */
-    break;
-
-  case -1:
-    perror("no fork!");
-    exit(1);
-    break;
-
-  default:
-    Close(fd[WRITE]); /* close unused write end of the pipe */
-    Close(in);    /* close unused read end of the previous pipe */
-    in = fd[READ]; /* the next command reads from here */
-    break;
-  }
-  return in;
-}
-
 int chain_commands(char*** commands) {
   char*** command = commands;
-  int nr_commands = arraylen(commands);
+  int nr_commands = arraylen((char**)commands);
   int i = 0, in = STDIN_FILENO; /* the first command reads from stdin */
   for ( ; i < (nr_commands-1); ++i) {
     int fd[2]; /* in/out pipe ends */
@@ -102,25 +84,29 @@ int chain_commands(char*** commands) {
       perror("noo");
       exit(1);
     }
-    in = create_pipe(commands, i, in);
-    /* switch((pid=fork())) { */
+    switch((pid=fork())) {
 
-    /* case 0: */
-    /*   Close(fd[0]); /\* close unused read end of the pipe *\/ */
-    /*   run((char* const*)command[i], in, fd[1]); /\* $ command < in > fd[1] *\/ */
-    /*   break; */
+    case 0:
+      Close(fd[0]); /* close unused read end of the pipe */
+      redirect(in, STDIN_FILENO);   /* <&in  : child reads from in */
+      redirect(fd[WRITE], STDOUT_FILENO); /* >&out : child writes to out */
+      execvp(command[i][0], command[i]);
+      perror(command[i][0]);
+      exit(EXIT_FAILURE);
+      break;
 
-    /* case -1: */
-    /*   perror("no fork!"); */
-    /*   exit(1); */
-    /*   break; */
+    case -1:
+      perror("no fork!");
+      exit(1);
+      break;
 
-    /* default: */
-    /*   Close(fd[WRITE]); /\* close unused write end of the pipe *\/ */
-    /*   Close(in);    /\* close unused read end of the previous pipe *\/ */
-    /*   in = fd[READ]; /\* the next command reads from here *\/ */
-    /*   break; */
-    /* } */
+    default:
+      Close(fd[WRITE]); /* close unused write end of the pipe */
+      Close(in);    /* close unused read end of the previous pipe */
+      in = fd[READ]; /* the next command reads from here */
+      break;
+
+    }
   }
   return in;
 }
@@ -128,7 +114,7 @@ int chain_commands(char*** commands) {
 int execute_commands(char*** commands) {
 
   const char*** command = commands;
-  int nr_commands = arraylen(commands);
+  int nr_commands = arraylen((char**)commands);
   int n = sizeof(command) / sizeof(*command);
   int tmpin = dup(0);
   int tmpout = dup(1);
@@ -168,7 +154,6 @@ void run_terminal () {
       continue;
     } else {
       commands = parse_input(input);
-      printf("arraylen: %d\n", arraylen(commands));
     }
     if (strncmp(commands[0][0], "exit", 5) == 0) {
       exit(EXIT_SUCCESS);
