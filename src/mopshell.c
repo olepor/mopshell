@@ -56,7 +56,6 @@ enum PIPE_TYPE {
 };
 
 int chain_commands(char*** commands) {
-  char*** command = commands;
   int nr_commands = arraylen((char**)commands);
   int i = 0, in = STDIN_FILENO; /* the first command reads from stdin */
   for ( ; i < (nr_commands-1); ++i) {
@@ -72,8 +71,8 @@ int chain_commands(char*** commands) {
       close(fd[0]); /* close unused read end of the pipe */
       redirect(in, STDIN_FILENO);   /* <&in  : child reads from in */
       redirect(fd[WRITE], STDOUT_FILENO); /* >&out : child writes to out */
-      execvp(command[i][0], command[i]);
-      perror(command[i][0]);
+      execvp(commands[i][0], commands[i]);
+      perror(commands[i][0]);
       exit(EXIT_FAILURE);
       break;
 
@@ -93,6 +92,11 @@ int chain_commands(char*** commands) {
   return in;
 }
 
+/**
+ * Checks for an ampersand in last position of the array
+ * @param char** command - The parsed command array
+ * @return true or false
+ */
 int run_in_background(char** command) {
   int end = arraylen(command)-1;
   if ((*command[end]) == '&') {
