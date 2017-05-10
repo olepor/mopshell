@@ -55,6 +55,11 @@ enum PIPE_TYPE {
   READ, WRITE
 };
 
+/**
+ * Chains multiple pipes together
+ * @param char*** commands - the command arrays
+ * @return int in - the file descriptor to chain on
+ */
 int chain_commands(char*** commands) {
   int nr_commands = arraylen((char**)commands);
   int i = 0, in = STDIN_FILENO; /* the first command reads from stdin */
