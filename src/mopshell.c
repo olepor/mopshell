@@ -96,7 +96,7 @@ int chain_commands(char*** commands) {
 int run_in_background(char** command) {
   int end = arraylen(command)-1;
   if ((*command[end]) == '&') {
-    *command[end] = NULL; // Remove the ampersand
+    command[end] = NULL; // Remove the ampersand
     return 1;
   }
   return 0;
@@ -108,9 +108,7 @@ int run_in_background(char** command) {
  * @ return TODO
  */
 void execute_commands(char*** commands) {
-  const char*** command = commands;
   int nr_commands = arraylen((char**)commands);
-  int n = sizeof(command) / sizeof(*command);
   int tmpin = dup(0);
   int tmpout = dup(1);
   // Run all the children
@@ -124,8 +122,8 @@ void execute_commands(char*** commands) {
   if ((pid = fork()) == 0){
     close(fd[READ]);
     redirect(in, STDIN_FILENO);
-    execvp(command[nr_commands-1][0], command[nr_commands-1]);
-    perror(command[nr_commands-1][0]);
+    execvp(commands[nr_commands-1][0], commands[nr_commands-1]);
+    perror(commands[nr_commands-1][0]);
     exit(EXIT_FAILURE);
   }
   int status;
