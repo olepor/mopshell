@@ -112,6 +112,8 @@ void execute_commands(char*** commands) {
   int tmpin = dup(0);
   int tmpout = dup(1);
   // Run all the children
+  int background = 0;
+  background = run_in_background(commands[nr_commands-1]); // Remove the ampersand
   int in=0;
   if (nr_commands > 0)
     in = chain_commands(commands);
@@ -127,7 +129,7 @@ void execute_commands(char*** commands) {
     exit(EXIT_FAILURE);
   }
   int status;
-  if (run_in_background(commands[nr_commands-1])) {
+  if (background) {
     while ((pid = wait(&status)) != -1) {
       fprintf(stderr, "process %d exits with %d\n", pid, WEXITSTATUS(status));
     }
