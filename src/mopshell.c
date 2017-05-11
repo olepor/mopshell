@@ -165,6 +165,7 @@ void run_terminal () {
       exit(EXIT_SUCCESS);
     }
     execute_commands(commands);
+    free_command_mem(commands);
 
   } while(1);
 
